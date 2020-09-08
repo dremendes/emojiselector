@@ -1048,6 +1048,30 @@ activate (GtkApplication* app,
   g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "👨‍❤️‍💋‍👨");
   gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 19, 1, 1);
 
+  emoji = gtk_button_new_with_label ("🖤");
+  g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "🖤");
+  gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 20, 1, 1);
+
+  emoji = gtk_button_new_with_label ("❤");
+  g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "❤");
+  gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 21, 1, 1);
+  
+  emoji = gtk_button_new_with_label ("🍑");
+  g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "🍑");
+  gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 22, 1, 1);
+  
+  emoji = gtk_button_new_with_label ("🍓");
+  g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "🍓");
+  gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 23, 1, 1);
+
+  emoji = gtk_button_new_with_label ("💥");
+  g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "💥");
+  gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 24, 1, 1);
+  
+  emoji = gtk_button_new_with_label ("💋");
+  g_signal_connect (emoji, "clicked", G_CALLBACK (copy_to_clipboard), "💋");
+  gtk_grid_attach (GTK_GRID (emojisGrid), emoji, 9, 25, 1, 1);
+
   gtk_widget_show_all (window);
   gtk_main();
 }
