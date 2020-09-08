@@ -6,7 +6,7 @@ PC/notebook users often prefer web-versions of popular chat applications that ex
 
 Emoji Selector is a small GTK application that copies emojis to your clipboard so you don't have to look them up on the internet.
 
-This software as currently is is not intended for public use as it is not complete. For now it only features the emojis I most need to talk to my girlfriend
+This software as currently is is not intended for public use as it is not complete. For now it only features a handful emojis I need most to talk to my girlfriend
 
 # Compiling from source
 
