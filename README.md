@@ -2,17 +2,17 @@
 
 # Why a desktop Emoji Selector?
 
-PC/notebook users often prefer web-versions of popular chat applications that exists primarly for mobile devices. As emojis became part of our communication, PC users often see themselves visiting websites only to search and copy emojis they need to better express. 
+PC/notebook users often prefer web-versions of popular chat applications built for mobile devices. As emojis became part of our communications, those users often see themselves browsing websites only to get the emojis they need to better express. 
 
 Emoji Selector is a small GTK application that copies emojis to your clipboard so you don't have to look them up on the internet.
 
-This software as currently is is not intended for public use as it is not complete. For now it only features a handful emojis I need most to talk to my girlfriend
+This software as currently is is not well suited for public use as it is not complete. For now it only features a handful of emojis I need most to talk to my girlfriend
 
 # TODO
-   1. Store user create emojis sequences
-      Must add buttons for space and line-break to allow this...
+   1. Store user created emoji sequences
+      Add buttons for space and line-break to allow for nice emoji sequences
    2. Full Text Search by emoji description and tags
-   3. Import / Export user create emojis sequences
+   3. Import / Export user created emoji sequences
 
 # Compiling from source
 
