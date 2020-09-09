@@ -8,6 +8,12 @@ Emoji Selector is a small GTK application that copies emojis to your clipboard s
 
 This software as currently is is not intended for public use as it is not complete. For now it only features a handful emojis I need most to talk to my girlfriend
 
+# TODO
+   1. Store user create emojis sequences
+      Must add buttons for space and line-break to allow this...
+   2. Full Text Search by emoji description and tags
+   3. Import / Export user create emojis sequences
+
 # Compiling from source
 
 ``$ gcc `pkg-config --cflags gtk+-3.0` -o emojiSelector emojiSelector.c `pkg-config --libs gtk+-3.0` ``
