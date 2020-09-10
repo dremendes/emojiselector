@@ -6,13 +6,11 @@ typedef struct Emoji
     char emojiCode[28];
     char description[255];
     int numTimesClicked;
-    int index;
 };
 
 GtkClipboard   *clipboard;
 GtkWidget      *window;
 GtkWidget      *emojisGrid;
-GtkWidget      *emoji;
 GtkSearchEntry *search_entry;
 GtkWidget      *label;
 
@@ -21,7 +19,7 @@ char   arrayEmojis[260][28] = {"😀","😃","😄","😁","😆","😅","😂",
 int    count = sizeof (emojis) / sizeof (struct Emoji);
 
 static void
-action_click (GtkWidget *widget,
+action_on_emoji_click (GtkWidget *widget,
              gpointer   data);
 
 static void
@@ -40,27 +38,26 @@ filter_results (GtkSearchEntry *entry,
 }
 
 static void
-copy_to_clipboard (GtkWidget *widget,
-                   gpointer   data)
+copy_emoji_to_clipboard (GtkWidget *widget,
+                         gpointer   data)
 {
   gtk_clipboard_set_text (clipboard, 
                           (gchar *) emojis[(int) data].emojiCode,
-                          -1);
+                          -1); //-1 so gtk does sizeOf on previous arguments
   g_message ("Copied %s  to clipboard",
              (gchar *) emojis[(int) data].emojiCode);
 }
 
 static void
-increase_emoji_counter (gpointer  data)
+increase_emoji_click_counter (gpointer  data)
 {
-  
   emojis[(int) data].numTimesClicked++;
-  g_message ("Increased click counter for emoji %i", (gint *) data);
-  
+  g_message ("Increased click counter for emoji %i", (gint *) data); 
 }
 
 static int
-emoji_cmp (const void *e1, const void *e2)
+comparison_by_times_clicked (const void *e1, 
+                            const void *e2)
 {
   const struct Emoji *emoji1 = e1;
   const struct Emoji *emoji2 = e2;
@@ -70,31 +67,47 @@ emoji_cmp (const void *e1, const void *e2)
 }
 
 static void
-sort_struct_emoji(struct Emoji *e[])
+sort_struct_emoji_array(struct Emoji *e[])
 {
-  qsort (e, count, sizeof (struct Emoji), emoji_cmp);
+  qsort (e, count, sizeof (struct Emoji), comparison_by_times_clicked);
+}
+
+static int
+populate_emoji_struct(int i, struct Emoji *e, char arrE[260][28])
+{
+  strncpy(e[i].emojiCode, arrE[i], sizeof(arrE[i]));
+  strncpy(e[i].description, "as" + (char) i, 28);
+
+  return 0;
 }
 
 static void
-draw_emojis_grid(bool firstTime)
+position_new_button_in_grid(int i, struct Emoji *e, GtkWidget *wdGrid)
 {
-  gtk_container_add (GTK_CONTAINER (window), emojisGrid);
+  GtkWidget      *emoji;
+
+  emoji = gtk_button_new_with_label (e[i].emojiCode);
+  g_signal_connect (emoji, 
+                    "clicked", 
+                    G_CALLBACK (action_on_emoji_click), i);
+  gtk_grid_attach (GTK_GRID (wdGrid), emoji, i % 10, i / 10 + 2, 1, 1);
+}
+
+static void
+draw_interface_grid(bool firstDrawn, GtkWidget *wdGrid)
+{
+  gtk_container_add (GTK_CONTAINER (window), wdGrid);
 
   for (int i = 0; i < 260; i++)
   {
-      if(firstTime == true) {
-        strncpy(emojis[i].emojiCode, arrayEmojis[i], sizeof(arrayEmojis[i]));
-        strncpy(emojis[i].description, "as" + (char) i, 27);
-      }
-      emoji = gtk_button_new_with_label (emojis[i].emojiCode);
-      g_signal_connect (emoji, "clicked", G_CALLBACK (action_click), i);
-      gtk_grid_attach (GTK_GRID (emojisGrid), emoji, i % 10, i / 10 + 2, 1, 1);
+      firstDrawn && populate_emoji_struct(i, emojis, arrayEmojis);
+      position_new_button_in_grid(i, emojis, wdGrid);
   }  
 
   search_entry = gtk_search_entry_new ();
   label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
-  gtk_grid_attach (GTK_GRID (emojisGrid), GTK_WIDGET(search_entry), 0, 0, 11, 1);
-  gtk_grid_attach (GTK_GRID (emojisGrid), GTK_WIDGET(label), 0, 1, 11, 1);
+  gtk_grid_attach (GTK_GRID (wdGrid), GTK_WIDGET(search_entry), 0, 0, 11, 1);
+  gtk_grid_attach (GTK_GRID (wdGrid), GTK_WIDGET(label), 0, 1, 11, 1);
   g_signal_connect (search_entry, "search-changed",
       G_CALLBACK (filter_results), label);
 
@@ -102,7 +115,7 @@ draw_emojis_grid(bool firstTime)
 }
 
 static void
-remove_emojis_grid()
+swap_interface_grid_for_a_clean_one()
 {
   GtkWidget      *emoji;
 
@@ -111,14 +124,15 @@ remove_emojis_grid()
 }
 
 static void
-action_click (GtkWidget *widget,
+action_on_emoji_click (GtkWidget *widget,
              gpointer   data)
 {
-  copy_to_clipboard(widget, data);
-  increase_emoji_counter(data);
-  sort_struct_emoji(emojis);
-  remove_emojis_grid();
-  draw_emojis_grid(false);
+  copy_emoji_to_clipboard(widget, data);
+  increase_emoji_click_counter(data);
+  sort_struct_emoji_array(emojis);
+  swap_interface_grid_for_a_clean_one();
+  draw_interface_grid(false, emojisGrid); 
+  //false means not first run - no need to populate Emoji struct
 }
 
 static void
@@ -138,7 +152,7 @@ activate (GtkApplication* app,
 
   emojisGrid = gtk_grid_new ();
 
-  draw_emojis_grid(1);
+  draw_interface_grid(true, emojisGrid); //1 is to say "first time drawn"
 
   gtk_main();
 }
