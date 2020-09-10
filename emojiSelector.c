@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <stdbool.h>
 
 typedef struct Emoji
 {
@@ -16,8 +17,8 @@ GtkSearchEntry *search_entry;
 GtkWidget      *label;
 
 struct Emoji emojis[260];
-int    count;
 char   arrayEmojis[260][28] = {"😀","😃","😄","😁","😆","😅","😂","🤣","😇","😉","😊","🙂","🙃","☺","😋","😌","😍","🥰","😘","😗","😙","😚","🤪","😜","😝","😛","🤑","😎","🤓","🧐","🤠","🥳","🤗","🤡","😏","😶","😐","😑","😒","🙄","🤨","🤔","🤫","🤭","🤥","😳","😞","😟","😠","😡","🤬","😔","😕","🙁","☹","😬","🥺","😣","😖","😫","😩","🥱","😤","😮","😱","😨","😰","😯","😦","😧","😢","😥","😪","🤤","😓","😭","🤩","😵","🥴","😲","🤯","🤐","😷","🤕","🤒","🤮","🤢","🤧","🥵","🥶","😴","💤","😈","👿","👹","👺","💩","👻","💀","☠","👽","🤖","🎃","😺","😸","😹","😻","😼","😽","🙀","😿","😾","👐🏿","🤲🏿","🙌🏿","👏🏿","🙏🏿","🤝","👍🏿","👎🏿","👊🏿","✊🏿","🤛🏿","🤜🏿","🤞🏿","✌🏿","🤘🏿","🤟🏿","👌🏿","🤏🏿","👈🏿","👉🏿","👆🏿","👇🏿","☝🏿","✋🏿","🤚🏿","🖐🏿","🖖🏿","👋🏿","🤙🏿","💪🏿","🦾","🖕🏿","✍🏿","🤳🏿","💅🏿","🦵🏿","🦿","🦶🏿","👄","🦷","👅","👂🏿","🦻🏿","👃🏿","👁","👀","🧠","🦴","👤","👥","🗣","👶🏿","👧🏿","🧒🏿","👦🏿","👩🏿","🧑🏿","👨🏿","👩🏿‍🦱","🧑🏿‍🦱","👨🏿‍🦱","👩🏿‍🦰","🧑🏿‍🦰","👨🏿‍🦰","👱🏿‍♀️","👱🏿","👱🏿‍♂️","👩🏿‍🦳","🧑🏿‍🦳","👨🏿‍🦳","👩🏿‍🦲","🧑🏿‍🦲","👨🏿‍🦲","🧔🏿","👵🏿","🧓🏿","👴🏿","👲🏿","👳🏿‍♀️","👳🏿","👳🏿‍♂️","🧕🏿","👼🏿","👸🏿","🤴🏿","👰🏿","🤵🏿‍♀️","🤵🏿","🤵🏿‍♂️","🙇🏿‍♀️","🙇🏿","🙇🏿‍♂️","💁🏿‍♀️","💁🏿","💁🏿‍♂️","🙅🏿‍♀️","🙅🏿","🙅🏿‍♂️","🙆🏿‍♀️","🙆🏿","🙆🏿‍♂️","🤷🏿‍♀️","🤷🏿","🤷🏿‍♂️","🙋🏿‍♀️","🙋🏿","🙋🏿‍♂️","🤦🏿‍♀️","🤦🏿","🤦🏿‍♂️","🙎🏿‍♀️","🙎🏿","🙎🏿‍♂️","🙍🏿‍♀️","🙍🏿","🙍🏿‍♂️","💇🏿‍♀️","💇🏿","💇🏿‍♂️","💆🏿‍♀️","💆🏿","💆🏿‍♂️","🤰🏿","🤱🏿","🚶🏿‍♀️","🚶🏿","🚶🏿‍♂️","🏃🏿‍♀️","🏃🏿","🏃🏿‍♂️","💃🏿","🕺🏿","👫🏿","👭🏿","👬🏿","🧑🏿‍🤝‍🧑🏿","👩‍❤️‍👨","👩‍❤️‍👩","👨‍❤️‍👨","👩‍❤️‍💋‍👨","👩‍❤️‍💋‍👩","👨‍❤️‍💋‍👨","🖤","❤","🍑","🍓","💥","💋"};
+int    count = sizeof (emojis) / sizeof (struct Emoji);
 
 static void
 action_click (GtkWidget *widget,
@@ -65,33 +66,30 @@ emoji_cmp (const void *e1, const void *e2)
   const struct Emoji *emoji2 = e2;
 
   return emoji1->numTimesClicked == emoji2->numTimesClicked ? 
-         0 : (emoji1->numTimesClicked < emoji2->numTimesClicked ? 0 : -1);
+         0 : (emoji1->numTimesClicked < emoji2->numTimesClicked ? 1 : -1);
 }
 
 static void
 sort_struct_emoji(struct Emoji *e[])
 {
   qsort (e, count, sizeof (struct Emoji), emoji_cmp);
-  g_message ("Sorted emojis array, %s: %d, %s: %d", emojis[0].emojiCode , emojis[0].numTimesClicked, emojis[1].emojiCode, emojis[1].numTimesClicked);
 }
 
 static void
-redraw_buttons()
+draw_emojis_grid(bool firstTime)
 {
-  GtkWidget      *emoji;
-
-  gtk_container_remove (GTK_CONTAINER (window), emojisGrid);
-  emojisGrid = gtk_grid_new ();
   gtk_container_add (GTK_CONTAINER (window), emojisGrid);
 
   for (int i = 0; i < 260; i++)
   {
-      strncpy(arrayEmojis[i], emojis[i].emojiCode, sizeof(arrayEmojis[i]));
+      if(firstTime == true) {
+        strncpy(emojis[i].emojiCode, arrayEmojis[i], sizeof(arrayEmojis[i]));
+        strncpy(emojis[i].description, "as" + (char) i, 27);
+      }
       emoji = gtk_button_new_with_label (emojis[i].emojiCode);
       g_signal_connect (emoji, "clicked", G_CALLBACK (action_click), i);
       gtk_grid_attach (GTK_GRID (emojisGrid), emoji, i % 10, i / 10 + 2, 1, 1);
   }  
-  count = sizeof (emojis) / sizeof (struct Emoji);
 
   search_entry = gtk_search_entry_new ();
   label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
@@ -104,13 +102,23 @@ redraw_buttons()
 }
 
 static void
+remove_emojis_grid()
+{
+  GtkWidget      *emoji;
+
+  gtk_container_remove (GTK_CONTAINER (window), emojisGrid);
+  emojisGrid = gtk_grid_new ();
+}
+
+static void
 action_click (GtkWidget *widget,
              gpointer   data)
 {
   copy_to_clipboard(widget, data);
   increase_emoji_counter(data);
   sort_struct_emoji(emojis);
-  redraw_buttons();
+  remove_emojis_grid();
+  draw_emojis_grid(false);
 }
 
 static void
@@ -129,30 +137,9 @@ activate (GtkApplication* app,
   gtk_container_set_border_width (GTK_CONTAINER (window), 30);
 
   emojisGrid = gtk_grid_new ();
-  gtk_container_add (GTK_CONTAINER (window), emojisGrid);
 
-  for (int i = 0; i < 260; i++)
-  {
+  draw_emojis_grid(1);
 
-      strncpy(emojis[i].emojiCode, arrayEmojis[i], sizeof(arrayEmojis[i]));
-      strncpy(emojis[i].description, "as" + (char) i, 27);
-      emojis[i].numTimesClicked = 0;
-      emojis[i].index = i;
-      emoji = gtk_button_new_with_label (emojis[i].emojiCode);
-      g_signal_connect (emoji, "clicked", G_CALLBACK (action_click), i);
-      gtk_grid_attach (GTK_GRID (emojisGrid), emoji, i % 10, i / 10 + 2, 1, 1);
-  }  
-
-  count = sizeof (emojis) / sizeof (struct Emoji);
-
-  search_entry = gtk_search_entry_new ();
-  label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
-  gtk_grid_attach (GTK_GRID (emojisGrid), GTK_WIDGET(search_entry), 0, 0, 11, 1);
-  gtk_grid_attach (GTK_GRID (emojisGrid), GTK_WIDGET(label), 0, 1, 11, 1);
-  g_signal_connect (search_entry, "search-changed",
-      G_CALLBACK (filter_results), label);
-
-  gtk_widget_show_all (window);
   gtk_main();
 }
 
