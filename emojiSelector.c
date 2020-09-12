@@ -11,7 +11,7 @@ typedef struct Emoji
 GtkClipboard   *clipboard;
 GtkWidget      *window;
 GtkWidget      *emojisGrid;
-GtkSearchEntry *search_entry;
+GtkSearchEntry *filter_entry;
 GtkWidget      *label;
 
 struct Emoji emojis[260];
@@ -20,7 +20,7 @@ int    count = sizeof (emojis) / sizeof (struct Emoji);
 
 static void
 action_on_emoji_click (GtkWidget *widget,
-             gpointer   data);
+                       gpointer   data);
 
 static void
 filter_results (GtkSearchEntry *entry,
@@ -37,6 +37,46 @@ filter_results (GtkSearchEntry *entry,
                         : "Digite para filtrar / Start Typing to filter");
 }
 
+static int
+comparison_by_times_clicked (const void *e1, 
+                            const void *e2)
+{
+  const struct Emoji *emoji1 = e1;
+  const struct Emoji *emoji2 = e2;
+
+  return emoji1->numTimesClicked == emoji2->numTimesClicked ? 
+         0 : (emoji1->numTimesClicked < emoji2->numTimesClicked ? 1 : -1);
+}
+
+static int
+populate_emoji_struct(int i, struct Emoji *e, char arrE[260][28])
+{
+  strncpy(e[i].emojiCode, arrE[i], sizeof(arrE[i]));
+  strncpy(e[i].description, "as" + (char) i, 28);
+
+  return true;
+}
+
+static int
+position_new_button_in_grid(int i, struct Emoji *e, GtkWidget *wdGrid)
+{
+  GtkWidget      *emoji;
+
+  emoji = gtk_button_new_with_label (e[i].emojiCode);
+  g_signal_connect (emoji, 
+                    "clicked", 
+                    G_CALLBACK (action_on_emoji_click), i);
+  gtk_grid_attach (GTK_GRID (wdGrid), emoji, i % 10, i / 10 + 2, 1, 1);
+  
+  return true;
+}
+
+static void
+increase_emoji_click_counter (gpointer  data)
+{
+  emojis[(int) data].numTimesClicked++;
+}
+
 static void
 copy_emoji_to_clipboard (GtkWidget *widget,
                          gpointer   data)
@@ -49,69 +89,9 @@ copy_emoji_to_clipboard (GtkWidget *widget,
 }
 
 static void
-increase_emoji_click_counter (gpointer  data)
-{
-  emojis[(int) data].numTimesClicked++;
-  g_message ("Increased click counter for emoji %i", (gint *) data); 
-}
-
-static int
-comparison_by_times_clicked (const void *e1, 
-                            const void *e2)
-{
-  const struct Emoji *emoji1 = e1;
-  const struct Emoji *emoji2 = e2;
-
-  return emoji1->numTimesClicked == emoji2->numTimesClicked ? 
-         0 : (emoji1->numTimesClicked < emoji2->numTimesClicked ? 1 : -1);
-}
-
-static void
 sort_struct_emoji_array(struct Emoji *e[])
 {
   qsort (e, count, sizeof (struct Emoji), comparison_by_times_clicked);
-}
-
-static int
-populate_emoji_struct(int i, struct Emoji *e, char arrE[260][28])
-{
-  strncpy(e[i].emojiCode, arrE[i], sizeof(arrE[i]));
-  strncpy(e[i].description, "as" + (char) i, 28);
-
-  return 0;
-}
-
-static void
-position_new_button_in_grid(int i, struct Emoji *e, GtkWidget *wdGrid)
-{
-  GtkWidget      *emoji;
-
-  emoji = gtk_button_new_with_label (e[i].emojiCode);
-  g_signal_connect (emoji, 
-                    "clicked", 
-                    G_CALLBACK (action_on_emoji_click), i);
-  gtk_grid_attach (GTK_GRID (wdGrid), emoji, i % 10, i / 10 + 2, 1, 1);
-}
-
-static void
-draw_interface_grid(bool firstDrawn, GtkWidget *wdGrid)
-{
-  gtk_container_add (GTK_CONTAINER (window), wdGrid);
-
-  for (int i = 0; i < 260; i++)
-  {
-      firstDrawn && populate_emoji_struct(i, emojis, arrayEmojis);
-      position_new_button_in_grid(i, emojis, wdGrid);
-  }  
-
-  search_entry = gtk_search_entry_new ();
-  label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
-  gtk_grid_attach (GTK_GRID (wdGrid), GTK_WIDGET(search_entry), 0, 0, 11, 1);
-  gtk_grid_attach (GTK_GRID (wdGrid), GTK_WIDGET(label), 0, 1, 11, 1);
-  g_signal_connect (search_entry, "search-changed",
-      G_CALLBACK (filter_results), label);
-
-  gtk_widget_show_all (window);
 }
 
 static void
@@ -124,8 +104,28 @@ swap_interface_grid_for_a_clean_one()
 }
 
 static void
+draw_interface_grid(bool firstDrawn, GtkWidget *wdGrid)
+{
+  gtk_container_add (GTK_CONTAINER (window), wdGrid);
+
+  for (int each_index = 0; each_index < 260; each_index++) {
+      firstDrawn && populate_emoji_struct(each_index, emojis, arrayEmojis);
+      position_new_button_in_grid(each_index, emojis, wdGrid);
+  }
+
+  filter_entry = gtk_search_entry_new ();
+  label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
+  gtk_grid_attach (GTK_GRID (wdGrid), GTK_WIDGET(filter_entry), 0, 0, 11, 1);
+  gtk_grid_attach (GTK_GRID (wdGrid), GTK_WIDGET(label), 0, 1, 11, 1);
+  g_signal_connect (filter_entry, "search-changed",
+                    G_CALLBACK (filter_results), label);
+
+  gtk_widget_show_all (window);
+}
+
+static void
 action_on_emoji_click (GtkWidget *widget,
-             gpointer   data)
+                       gpointer   data)
 {
   copy_emoji_to_clipboard(widget, data);
   increase_emoji_click_counter(data);
@@ -139,20 +139,20 @@ static void
 activate (GtkApplication* app,
           gpointer        user_data)
 {
+  window = gtk_application_window_new (app);
+
   clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
 
-  window = gtk_application_window_new (app);
   //This function takes a GtkWindow* pointer and a string as input. 
   //As our window pointer is a GtkWidget pointer, we need to cast it to GtkWindow*
   //We do it using the macro GTK_WINDOW because it checks the class before casting
   //and sends a warning if it fails
   gtk_window_set_title (GTK_WINDOW (window), "Emoji Selector");
-  gtk_window_set_default_size (GTK_WINDOW (window), 600, 400);
-  gtk_container_set_border_width (GTK_CONTAINER (window), 30);
+  gtk_container_set_border_width (GTK_CONTAINER (window), 5);
 
   emojisGrid = gtk_grid_new ();
 
-  draw_interface_grid(true, emojisGrid); //1 is to say "first time drawn"
+  draw_interface_grid(true, emojisGrid); //true is to say "first time drawn"
 
   gtk_main();
 }
