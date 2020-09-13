@@ -7,7 +7,7 @@ PC/notebook users often prefer web-versions of popular chat applications built f
 Emoji Selector is a small GTK application that copies emojis to your clipboard so you don't have to look them up on the internet.
 It also sorts your emojis by frequency of use so they ones you often use appear first.
 
-This software as currently is is not well suited for public use as it is not complete. For now it only features a handful of emojis I need most to talk to my girlfriend
+This software as currently is is not well suited for public use as it is not complete.
 
 # TODO
    1. Persist emojis frequencies-of-use data
@@ -15,6 +15,7 @@ This software as currently is is not well suited for public use as it is not com
       Add buttons for space and line-break to allow for nice emoji sequences
    3. Full Text Search by emoji description and tags
    4. Import / Export user created emoji sequences
+   5. Make it fast and < 500k on disk (it heights 1.3Mb currently and it is slow. I don't think > 1Mb is justified for a program like this)
 
 # Compiling from source
 
