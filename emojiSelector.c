@@ -1,5 +1,4 @@
 #include <gtk/gtk.h>
-#include <stdbool.h>
 
 #define TOTAL_EMOJIS 150 //4168 = total
 #define INT_WINDOW_WIDTH 565
@@ -52,18 +51,7 @@ comparison_by_times_clicked (const void *e1,
          0 : (emoji1->times_clicked < emoji2->times_clicked ? 1 :  -1);
 }
 
-static int
-populate_emoji_struct (int i, 
-                       struct Emoji *e, 
-                       struct Emoji *emoji_list)
-{
-  strncpy (e[i].emoji_code, emoji_list[i].emoji_code, sizeof (emoji_list[i].emoji_code));
-  strncpy (e[i].description, emoji_list[i].description, 255);
-
-  return true;
-}
-
-static int
+static void
 position_new_button_in_grid (int          index, 
                              struct Emoji *structured_emojis, 
                              GtkWidget    *grid, 
@@ -86,8 +74,6 @@ position_new_button_in_grid (int          index,
                     "clicked", 
                     G_CALLBACK (action_on_emoji_click), data_args);
   gtk_grid_attach (GTK_GRID (grid), button_emoji, index % 10, index / 10 + 2, 1, 1);
-
-  return 0;
 }
 
 static void
