@@ -1,6 +1,10 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 
+#define TOTAL_EMOJIS 150 //4168 = total
+#define INT_WINDOW_WIDTH 565
+#define INT_WINDOW_HEIGHT 600
+
 struct Emoji
 {
     char emoji_code[36];
@@ -29,7 +33,7 @@ filter_results (GtkSearchEntry *entry,
   const char *textToFilter;
 
   textToFilter = gtk_entry_get_text (GTK_ENTRY (entry));
-  g_message ("Filtering by: %s Found %i results", textToFilter, 0);
+  g_message ("Filtering by: %s", textToFilter);
   gtk_label_set_text (result_label,
                       strcmp (textToFilter, "") 
                       != 0 
@@ -45,7 +49,7 @@ comparison_by_times_clicked (const void *e1,
   const struct Emoji *emoji2 = e2;
 
   return emoji1->times_clicked == emoji2->times_clicked ? 
-         0 : (emoji1->times_clicked < emoji2->times_clicked ? 1 :  1);
+         0 : (emoji1->times_clicked < emoji2->times_clicked ? 1 :  -1);
 }
 
 static int
@@ -96,13 +100,14 @@ copy_emoji_to_clipboard (char         emoji[36],
 static void
 sort_struct_emoji_array (struct Emoji *e)
 {
-  qsort (e, sizeof (e) / sizeof (struct Emoji), sizeof(struct Emoji), comparison_by_times_clicked);
+  qsort (e, TOTAL_EMOJIS, sizeof(struct Emoji), comparison_by_times_clicked);
 }
 
 static void
 increase_clicked_counter_for_emoji(data_clicked *data)
 {
   data->structured_emojis[data->index_emoji].times_clicked++;
+  g_message ("Emoji:: %s TimesClicked: %d", data->structured_emojis[data->index_emoji].emoji_code, data->structured_emojis[data->index_emoji].times_clicked);
 }
 
 static void
@@ -115,8 +120,10 @@ draw_interface_grid (GtkWidget    *window,
   GtkWidget  *filter_entry; //filter_entry should be GtkSearchEntry but gcc
   GtkWidget  *label;        //gives us a warning If we declare it like this. Why?
 
-  gtk_container_remove (GTK_CONTAINER (grid), scrolled_window);
-  gtk_container_remove (GTK_CONTAINER (window), grid);
+  if (GTK_CONTAINER (grid)) {
+    gtk_container_remove (GTK_CONTAINER (scrolled_window), grid);
+    gtk_container_remove (GTK_CONTAINER (window), scrolled_window);
+  }
 
   grid = gtk_grid_new ();
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -131,7 +138,7 @@ draw_interface_grid (GtkWidget    *window,
   gtk_container_add (GTK_CONTAINER (scrolled_window), grid);
 
   for (int each_index = 0; 
-       each_index < 20;//4168;
+       each_index < TOTAL_EMOJIS ;
        each_index++)
       position_new_button_in_grid (each_index, 
                                    structured_emojis, 
@@ -179,7 +186,7 @@ setup_interface (GtkApplication  *app,
   clipboard = gtk_clipboard_get (GDK_SELECTION_CLIPBOARD);
   
   gtk_window_set_title (GTK_WINDOW (window), "Emoji Selector");
-  gtk_window_set_default_size (GTK_WINDOW (window), 985, 890);
+  gtk_window_set_default_size (GTK_WINDOW (window), INT_WINDOW_WIDTH, INT_WINDOW_HEIGHT);
   
   gtk_container_set_border_width (GTK_CONTAINER (window), 5);
 
