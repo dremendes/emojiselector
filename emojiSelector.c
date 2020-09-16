@@ -1,7 +1,8 @@
 #include <gtk/gtk.h>
+#include <stdlib.h>
 
-#define TOTAL_EMOJIS 150 //4168 = total
-#define INT_WINDOW_WIDTH 565
+#define TOTAL_EMOJIS 250 //4168 = total
+#define INT_WINDOW_WIDTH 600
 #define INT_WINDOW_HEIGHT 600
 
 struct Emoji
