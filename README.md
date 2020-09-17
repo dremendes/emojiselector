@@ -18,14 +18,14 @@ There are linux and windows (64 bits) binaries in this repo if you want to use i
    4. Import / Export user created emoji sequences
    5. Make it fast and < 500k on disk (it heights 1.3Mb currently and it is slow. I don't think > 1Mb is justified for a program like this)
 
-# Compiling from source on Linux and Windows (with MSYS2 MinGW 64bits)
+# Compiling from source
 
 ``$ gcc `pkg-config --cflags gtk+-3.0` -o emojiSelector emojiSelector.c `pkg-config --libs gtk+-3.0` ``
 
-# Running (on Linux)
+# Running on Linux
 `$ ./emojiSelector`
 
-# Running (on Windows)
+# Running on Windows (with MSYS2 MinGW)
 `>emojiSelector.exe`
 
 
