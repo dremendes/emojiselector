@@ -1,9 +1,10 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-#define TOTAL_EMOJIS 250 //4168 = total
-#define INT_WINDOW_WIDTH 600
-#define INT_WINDOW_HEIGHT 600
+#define TOTAL_EMOJIS 276 //4168 = total
+#define EMOJIS_PER_LINE 12
+#define INT_WINDOW_WIDTH 900
+#define INT_WINDOW_HEIGHT 870
 
 struct Emoji
 {
@@ -74,7 +75,13 @@ position_new_button_in_grid (int          index,
   g_signal_connect (button_emoji, 
                     "clicked", 
                     G_CALLBACK (action_on_emoji_click), data_args);
-  gtk_grid_attach (GTK_GRID (grid), button_emoji, index % 10, index / 10 + 2, 1, 1);
+
+  gtk_grid_attach (GTK_GRID (grid),
+                   button_emoji,
+                   index % EMOJIS_PER_LINE,
+                   index / EMOJIS_PER_LINE + 2,
+                   1,
+                   1);
 }
 
 static void
@@ -98,15 +105,26 @@ increase_clicked_counter_for_emoji(data_clicked *data)
 }
 
 static void
-draw_interface_grid (GtkWidget    *window,
-                     GtkWidget    *grid, 
-                     GtkWidget    *scrolled_window, 
-                     struct Emoji *structured_emojis,
-                     GtkClipboard *clipboard)
-{ 
+build_filter_widget(GtkWidget *grid)
+{
   GtkWidget  *filter_entry; //filter_entry should be GtkSearchEntry but gcc
   GtkWidget  *label;        //gives us a warning If we declare it like this. Why?
 
+  filter_entry = gtk_search_entry_new ();
+  label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET(filter_entry), 0, 0, EMOJIS_PER_LINE, 1);
+  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET(label), 0, 1, EMOJIS_PER_LINE, 1);
+  g_signal_connect (filter_entry, "search_changed",
+                    G_CALLBACK (filter_results), label);
+}
+
+GtkWidget *
+build_grid_widget (GtkWidget    *window,
+                   GtkWidget    *grid, 
+                   GtkWidget    *scrolled_window, 
+                   struct Emoji *structured_emojis,
+                   GtkClipboard *clipboard)
+{ 
   if (GTK_CONTAINER (grid)) {
     gtk_container_remove (GTK_CONTAINER (scrolled_window), grid);
     gtk_container_remove (GTK_CONTAINER (window), scrolled_window);
@@ -133,14 +151,7 @@ draw_interface_grid (GtkWidget    *window,
                                    scrolled_window, 
                                    window,
                                    clipboard);
-
-  filter_entry = gtk_search_entry_new ();
-  label = gtk_label_new ("Digite para filtrar / Start Typing to filter");
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET(filter_entry), 0, 0, 11, 1);
-  gtk_grid_attach (GTK_GRID (grid), GTK_WIDGET(label), 0, 1, 11, 1);
-  g_signal_connect (filter_entry, "search_changed",
-                    G_CALLBACK (filter_results), label);
-  gtk_widget_show_all (window);
+  return grid;
 }
 
 static void
@@ -151,11 +162,13 @@ action_on_emoji_click (GtkWidget    *widget,
                            data->clipboard);
   increase_clicked_counter_for_emoji(data);
   sort_struct_emoji_array (data->structured_emojis);
-  draw_interface_grid (data->window,
-                       data->grid, 
-                       data->scrolled_window, 
-                       data->structured_emojis, 
-                       data->clipboard);
+  data->grid = build_grid_widget (data->window,
+                     data->grid, 
+                     data->scrolled_window, 
+                     data->structured_emojis, 
+                     data->clipboard);
+  build_filter_widget(data->grid);
+  gtk_widget_show_all (data->window);                       
 }
 
 static void
@@ -177,11 +190,13 @@ setup_interface (GtkApplication  *app,
   
   gtk_container_set_border_width (GTK_CONTAINER (window), 5);
 
-  draw_interface_grid (window,
-                       grid_emojis, 
-                       scrolled_window, 
-                       populated_emojis_struct, 
-                       clipboard);
+  grid_emojis = build_grid_widget (window,
+                     grid_emojis, 
+                     scrolled_window, 
+                     populated_emojis_struct, 
+                     clipboard);
+  build_filter_widget(grid_emojis);
+  gtk_widget_show_all (window);                       
 
   gtk_main();
 }
