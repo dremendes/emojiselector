@@ -5,7 +5,7 @@
 PC/notebook users often prefer the web, desktop versions of popular mobile chat applications. As emojis became part of our communications, those users often see themselves browsing websites only to get emojis they want to use in conversations. 
 
 Emoji Selector is a small GTK application that copies emojis to your clipboard so you don't have to look them up on the internet.
-It also sorts your emojis by frequency of use so they ones you often use appear first.
+It also sorts your emojis by frequency of use so the ones you use more often appear first.
 
 This software as currently is is not well suited for public use as it is not complete.
 There are linux and windows (64 bits) binaries in this repo if you want to use it anyways.
